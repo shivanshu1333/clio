@@ -23,3 +23,4 @@ pyasn1-modules==0.2.2
 python-ldap==3.1.0
 pyldap==3.0.0.post1
 flask-simpleldap==1.2.0
+PyGithub==1.43.5

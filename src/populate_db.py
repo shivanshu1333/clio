@@ -11,30 +11,50 @@ from app import app
 from datetime import datetime
 from specification import *
 from models import *
+import requests
+from config import g
 
-
+# def populate_license(directory):
+#     path = os.path.join(os.getcwd(), os.path.join(
+#         directory, 'license-info.csv'))
+#     with open(path, 'r', encoding='utf-8') as input_file:
+#         read_csv = csv.reader(input_file, delimiter=',')
+#         for row in read_csv:
+#             full_name = row[0]
+#             identifier = row[1]
+#             if(row[2] == 'FSF Libre'):
+#                 fsf_free_libre = True
+#             else:
+#                 fsf_free_libre = False
+#             if(row[3] == 'OSI Approved'):
+#                 osi_approved = True
+#             else:
+#                 osi_approved = False
+#             license_category = row[4]
+#             license_text = row[5]
+#             l = License(full_name, identifier, fsf_free_libre,
+#                         osi_approved, license_category, license_text)
+#             db.session.add(l)
 def populate_license(directory):
-    path = os.path.join(os.getcwd(), os.path.join(
-        directory, 'license-info.csv'))
-    with open(path, 'r', encoding='utf-8') as input_file:
-        read_csv = csv.reader(input_file, delimiter=',')
-        for row in read_csv:
-            full_name = row[0]
-            identifier = row[1]
-            if(row[2] == 'FSF Libre'):
-                fsf_free_libre = True
-            else:
-                fsf_free_libre = False
-            if(row[3] == 'OSI Approved'):
-                osi_approved = True
-            else:
-                osi_approved = False
-            license_category = row[4]
-            license_text = row[5]
-            l = License(full_name, identifier, fsf_free_libre,
-                        osi_approved, license_category, license_text)
+    repo = g.get_repo("spdx/license-list-data")
+    contents = repo.get_contents("json/details")
+    for i in range(len(contents)):
+        url=contents[i].download_url
+        response = requests.get(url)
+        jsonRes = response.json()
+        if(jsonRes['isDeprecatedLicenseId']==False):
+            full_name = jsonRes['name']
+            identifier = jsonRes['licenseId']
+            fsf_free_libre=False
+            if 'isFsfLibre' in jsonRes:
+                fsf_free_libre=True
+            osi_approved=False
+            if(jsonRes['isOsiApproved']):
+                osi_approved=True
+            license_category = ''
+            license_text = jsonRes['licenseText']
+            l = License(full_name, identifier, fsf_free_libre,osi_approved,license_category, license_text)
             db.session.add(l)
-
 
 def populate_component(directory):
     path = os.path.join(os.getcwd(), os.path.join(

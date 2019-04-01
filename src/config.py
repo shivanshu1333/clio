@@ -10,12 +10,10 @@ DEBUG = True
 
 # Define the application directory
 import os
-from github import Github
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Define the database
 SQLALCHEMY_DATABASE_URI = 'mysql://username:password@localhost/clio'
-g = Github("githubUsername", "password")
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

@@ -12,7 +12,7 @@ from datetime import datetime
 from specification import *
 from models import *
 import requests
-from config import g
+from github import Github
 
 # def populate_license(directory):
 #     path = os.path.join(os.getcwd(), os.path.join(
@@ -36,6 +36,7 @@ from config import g
 #                         osi_approved, license_category, license_text)
 #             db.session.add(l)
 def populate_license(directory):
+    g = Github()
     repo = g.get_repo("spdx/license-list-data")
     contents = repo.get_contents("json/details")
     for i in range(len(contents)):

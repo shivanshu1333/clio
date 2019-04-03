@@ -13,7 +13,7 @@ import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Define the database
-SQLALCHEMY_DATABASE_URI = 'mysql://root:l@localhost/clio'
+SQLALCHEMY_DATABASE_URI = 'mysql://username:password@localhost/clio'
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

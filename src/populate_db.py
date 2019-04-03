@@ -12,7 +12,6 @@ from datetime import datetime
 from specification import *
 from models import *
 import requests
-from github import Github
 
 # def populate_license(directory):
 #     path = os.path.join(os.getcwd(), os.path.join(
@@ -36,26 +35,25 @@ from github import Github
 #                         osi_approved, license_category, license_text)
 #             db.session.add(l)
 def populate_license(directory):
-    g = Github()
-    repo = g.get_repo("spdx/license-list-data")
-    contents = repo.get_contents("json/details")
-    for i in range(len(contents)):
-        url=contents[i].download_url
-        response = requests.get(url)
-        jsonRes = response.json()
-        if(jsonRes['isDeprecatedLicenseId']==False):
-            full_name = jsonRes['name']
-            identifier = jsonRes['licenseId']
-            fsf_free_libre=False
-            if 'isFsfLibre' in jsonRes:
-                fsf_free_libre=True
-            osi_approved=False
-            if(jsonRes['isOsiApproved']):
-                osi_approved=True
-            license_category = ''
-            license_text = jsonRes['licenseText']
-            l = License(full_name, identifier, fsf_free_libre,osi_approved,license_category, license_text)
-            db.session.add(l)
+    url = 'https://api.github.com/repos/spdx/license-list-data/releases/latest'
+    tag=requests.get(url).json()['tag_name'] #get latest version release info in form of tag
+    fetch_url='https://raw.githubusercontent.com/spdx/license-list-data/'+tag+'/json/licenses.json' #generate destination URL
+    jsonRes=requests.get(fetch_url).json()["licenses"]
+    for i in range(len(jsonRes)):
+        full_name = jsonRes[i]['name']
+        identifier = jsonRes[i]['licenseId']
+        fsf_free_libre=False
+        if 'isFsfLibre' in jsonRes[i]:
+            fsf_free_libre=True
+        osi_approved=False
+        if(jsonRes[i]['isOsiApproved']):
+            osi_approved=True
+        license_category = ''
+        text_url=jsonRes[i]['detailsUrl']
+        license_text = requests.get(text_url).json()['licenseText']
+        l = License(full_name, identifier, fsf_free_libre,osi_approved,license_category, license_text)
+        db.session.add(l)
+
 
 def populate_component(directory):
     path = os.path.join(os.getcwd(), os.path.join(
